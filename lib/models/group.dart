@@ -35,7 +35,14 @@ class GroupModel {
     }
 
     final List<String> members = [];
-    if (data['memberNames'] != null) {
+    if (data['members'] != null) {
+      final mData = data['members'];
+      if (mData is Map) {
+        members.addAll(mData.keys.map((e) => e.toString()));
+      } else if (mData is List) {
+        members.addAll(mData.where((e) => e != null).map((e) => e.toString()));
+      }
+    } else if (data['memberNames'] != null) {
       final mData = data['memberNames'];
       if (mData is List) {
         members.addAll(mData.map((e) => e.toString()));
@@ -44,13 +51,15 @@ class GroupModel {
       }
     }
 
-    int storedBalance = int.tryParse((data['balance'] ?? 0).toString()) ?? 0;
+    final num rawBalance = data['totalBalance'] ?? data['balance'] ?? data['total_balance'] ?? data['netBalance'] ?? 0;
+    int parsedBalance = (num.tryParse(rawBalance.toString()) ?? 0).toInt();
+
     int calculatedBalance = txns.values.fold(0, (sum, t) => sum + t.amount);
-    int finalBalance = (storedBalance != 0 || txns.isEmpty) ? storedBalance : calculatedBalance;
+    int finalBalance = (parsedBalance != 0 || txns.isEmpty) ? parsedBalance : calculatedBalance;
 
     return GroupModel(
       id: id,
-      name: (data['name'] ?? id).toString(),
+      name: (data['name'] ?? data['title'] ?? id).toString(),
       description: (data['description'] ?? '').toString(),
       memberNames: members,
       balance: finalBalance,
@@ -63,6 +72,7 @@ class GroupModel {
       'name': name,
       'description': description,
       'memberNames': memberNames,
+      'totalBalance': balance,
       'balance': balance,
       'transactions': transactions.map((key, value) => MapEntry(key, value.toMap())),
     };

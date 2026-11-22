@@ -30,9 +30,11 @@ class Contact {
       }
     }
 
-    int storedBalance = int.tryParse((data['balance'] ?? 0).toString()) ?? 0;
+    final num rawBalance = data['balance'] ?? data['totalBalance'] ?? data['netBalance'] ?? data['total_balance'] ?? 0;
+    int parsedBalance = (num.tryParse(rawBalance.toString()) ?? 0).toInt();
+
     int calculatedBalance = txns.values.fold(0, (sum, t) => sum + t.amount);
-    int finalBalance = (storedBalance != 0 || txns.isEmpty) ? storedBalance : calculatedBalance;
+    int finalBalance = (parsedBalance != 0 || txns.isEmpty) ? parsedBalance : calculatedBalance;
 
     return Contact(
       id: id,
