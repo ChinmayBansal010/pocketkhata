@@ -27,7 +27,6 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
   void _addTransaction(bool isGive) {
     if (_noteController.text.isNotEmpty) {
-      // Simple parser: "Tea 20" -> note: "Tea", amount: 20
       final parts = _noteController.text.trim().split(' ');
       int amount = 0;
       String note = _noteController.text;
@@ -44,7 +43,6 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
       if (amount == 0) return;
 
-      // Positive amount = You Gave (Red), Negative amount = You Got (Green)
       final finalAmount = isGive ? amount : -amount;
       _dbService.addTransaction(widget.contactId, note, finalAmount);
       _noteController.clear();
@@ -58,7 +56,9 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
       stream: _dbService.getContactStream(widget.contactId),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data == null) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator(color: Color(0xFF008080))),
+          );
         }
 
         final contact = snapshot.data!;
@@ -66,22 +66,40 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
           ..sort((a, b) => b.time.compareTo(a.time));
 
         return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
           appBar: AppBar(
-            title: Text(contact.name, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            elevation: 0,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            title: Text(
+              contact.name,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0F172A),
+                fontSize: 18,
+              ),
+            ),
           ),
           body: Column(
             children: [
               _buildBalanceHeader(contact),
               Expanded(
-                child: ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.all(10),
-                  itemCount: txns.length,
-                  itemBuilder: (context, index) {
-                    final txn = txns[index];
-                    return _buildTransactionBubble(txn);
-                  },
-                ),
+                child: txns.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No transactions yet',
+                          style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+                        ),
+                      )
+                    : ListView.builder(
+                        reverse: true,
+                        padding: const EdgeInsets.all(12),
+                        itemCount: txns.length,
+                        itemBuilder: (context, index) {
+                          final txn = txns[index];
+                          return _buildTransactionBubble(txn);
+                        },
+                      ),
               ),
               _buildInputArea(),
             ],
@@ -92,20 +110,30 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
   }
 
   Widget _buildBalanceHeader(Contact contact) {
-    final color = contact.balance >= 0 ? Colors.red.shade400 : Colors.green.shade400;
+    final isPositive = contact.balance >= 0;
+    final color = isPositive ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-      color: Colors.teal.shade50,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
       child: Column(
         children: [
           Text(
+            'Net Balance',
+            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 2),
+          Text(
             '₹${contact.balance.abs()}',
-            style: GoogleFonts.poppins(fontSize: 32, fontWeight: FontWeight.bold, color: color),
+            style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: color),
           ),
           Text(
-            contact.balance >= 0 ? "You Gave (To Get)" : "You Got (To Give)",
-            style: GoogleFonts.poppins(fontSize: 16, color: color, fontWeight: FontWeight.w500),
+            isPositive ? "You Gave (To Get Back)" : "You Got (To Give Back)",
+            style: GoogleFonts.poppins(fontSize: 13, color: color, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -114,8 +142,9 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
   Widget _buildTransactionBubble(TransactionEntry txn) {
     final isGave = txn.amount > 0;
-    final color = isGave ? Colors.red.shade50 : Colors.green.shade50;
-    final textColor = isGave ? Colors.red.shade900 : Colors.green.shade900;
+    final bgColor = isGave ? const Color(0xFFFEF2F2) : const Color(0xFFF0FDF4);
+    final borderColor = isGave ? const Color(0xFFFCA5A5) : const Color(0xFF86EFAC);
+    final textColor = isGave ? const Color(0xFF991B1B) : const Color(0xFF166534);
     final align = isGave ? Alignment.centerRight : Alignment.centerLeft;
     final time = DateFormat('dd MMM, hh:mm a').format(txn.time);
 
@@ -124,27 +153,41 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
       child: GestureDetector(
         onLongPress: () => _showDeleteTransactionDialog(txn),
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 5),
-          padding: const EdgeInsets.all(12),
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          constraints: const BoxConstraints(maxWidth: 320),
           decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(15).copyWith(
-              bottomRight: isGave ? const Radius.circular(0) : null,
-              bottomLeft: !isGave ? const Radius.circular(0) : null,
+            color: bgColor,
+            borderRadius: BorderRadius.circular(16).copyWith(
+              bottomRight: isGave ? Radius.zero : const Radius.circular(16),
+              bottomLeft: !isGave ? Radius.zero : const Radius.circular(16),
             ),
-            border: Border.all(color: isGave ? Colors.red.shade100 : Colors.green.shade100),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: isGave ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              Text(txn.note, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16, color: textColor)),
+              Text(
+                txn.note,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: textColor),
+              ),
               const SizedBox(height: 4),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('₹${txn.amount.abs()}', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: textColor)),
-                  const SizedBox(width: 10),
-                  Text(time, style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600])),
+                  Text(
+                    '₹${txn.amount.abs()}',
+                    style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w700, color: textColor),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(time, style: GoogleFonts.poppins(fontSize: 11, color: const Color(0xFF64748B))),
                 ],
               ),
             ],
@@ -156,41 +199,70 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
   Widget _buildInputArea() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5, offset: const Offset(0, -2))],
-      ),
-      child: Column(
-        children: [
-          TextField(
-            controller: _noteController,
-            decoration: InputDecoration(
-              hintText: 'Enter note and amount (e.g. Tea 20)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _addTransaction(false),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                  child: const Text('YOU GOT'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _addTransaction(true),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                  child: const Text('YOU GAVE'),
-                ),
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
           ),
         ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            TextField(
+              controller: _noteController,
+              style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w500),
+              decoration: InputDecoration(
+                hintText: 'Enter note and amount (e.g. Tea 20)',
+                hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                filled: true,
+                fillColor: const Color(0xFFF1F5F9),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _addTransaction(false),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF16A34A),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Text('YOU GOT (IN)', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _addTransaction(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDC2626),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: Text('YOU GAVE (OUT)', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -199,15 +271,24 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction?'),
+        backgroundColor: Colors.white,
+        title: Text('Delete Transaction?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+        content: Text('Are you sure you want to delete this transaction?', style: GoogleFonts.poppins(color: const Color(0xFF334155))),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+          ),
+          ElevatedButton(
             onPressed: () {
               _dbService.deleteTransaction(widget.contactId, txn.id, txn.amount);
               Navigator.pop(context);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Delete', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
