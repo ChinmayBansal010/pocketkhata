@@ -1,80 +1,55 @@
-import 'transaction_entry.dart';
-
 class GroupModel {
   final String id;
   final String name;
   final String description;
-  final List<String> memberNames;
-  final int balance;
-  final Map<String, TransactionEntry> transactions;
+  final List<String> memberIds;
 
   const GroupModel({
     required this.id,
     required this.name,
     this.description = '',
-    this.memberNames = const [],
-    required this.balance,
-    this.transactions = const {},
+    this.memberIds = const [],
   });
 
   factory GroupModel.fromMap(String id, Map<dynamic, dynamic> data) {
-    final Map<String, TransactionEntry> txns = {};
-    if (data['transactions'] != null) {
-      final transData = data['transactions'];
-      if (transData is Map) {
-        transData.forEach((key, value) {
-          txns[key.toString()] = TransactionEntry.fromMap(key.toString(), value);
-        });
-      } else if (transData is List) {
-        for (int i = 0; i < transData.length; i++) {
-          if (transData[i] != null) {
-            txns[i.toString()] = TransactionEntry.fromMap(i.toString(), transData[i]);
-          }
-        }
-      }
-    }
-
     final List<String> members = [];
     if (data['members'] != null) {
       final mData = data['members'];
       if (mData is Map) {
-        members.addAll(mData.keys.map((e) => e.toString()));
+        mData.forEach((key, val) {
+          if (val == true || val == 'true' || val != null) {
+            members.add(key.toString());
+          }
+        });
       } else if (mData is List) {
-        members.addAll(mData.where((e) => e != null).map((e) => e.toString()));
+        for (var item in mData) {
+          if (item != null) members.add(item.toString());
+        }
       }
-    } else if (data['memberNames'] != null) {
-      final mData = data['memberNames'];
+    } else if (data['memberIds'] != null) {
+      final mData = data['memberIds'];
       if (mData is List) {
         members.addAll(mData.map((e) => e.toString()));
-      } else if (mData is Map) {
-        members.addAll(mData.values.map((e) => e.toString()));
       }
     }
-
-    final num rawBalance = data['totalBalance'] ?? data['balance'] ?? data['total_balance'] ?? data['netBalance'] ?? 0;
-    int parsedBalance = (num.tryParse(rawBalance.toString()) ?? 0).toInt();
-
-    int calculatedBalance = txns.values.fold(0, (sum, t) => sum + t.amount);
-    int finalBalance = (parsedBalance != 0 || txns.isEmpty) ? parsedBalance : calculatedBalance;
 
     return GroupModel(
       id: id,
       name: (data['name'] ?? data['title'] ?? id).toString(),
       description: (data['description'] ?? '').toString(),
-      memberNames: members,
-      balance: finalBalance,
-      transactions: txns,
+      memberIds: members,
     );
   }
 
   Map<String, dynamic> toMap() {
+    final Map<String, bool> membersMap = {};
+    for (var id in memberIds) {
+      membersMap[id] = true;
+    }
     return {
       'name': name,
       'description': description,
-      'memberNames': memberNames,
-      'totalBalance': balance,
-      'balance': balance,
-      'transactions': transactions.map((key, value) => MapEntry(key, value.toMap())),
+      'members': membersMap,
     };
   }
 }

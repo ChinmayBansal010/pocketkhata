@@ -99,64 +99,37 @@ class DatabaseService {
     });
   }
 
-  Future<void> addGroup(String name, String description, [List<String> memberNames = const []]) async {
+  Future<void> addGroup(String name, String description, [List<String> memberIds = const []]) async {
     final String groupId = _groupsRef.push().key!;
     final Map<String, bool> membersMap = {};
-    for (var m in memberNames) {
-      membersMap[m] = true;
+    for (var id in memberIds) {
+      membersMap[id] = true;
     }
 
     await _groupsRef.child(groupId).set({
       'name': name,
       'description': description,
       'members': membersMap,
-      'totalBalance': 0,
-      'balance': 0,
-      'transactions': {},
     });
   }
 
-  Future<void> deleteGroup(String groupId) async {
+  Future<void> addMemberToGroup(String groupId, String contactId) async {
+    await _groupsRef.child(groupId).child('members').child(contactId).set(true);
+  }
+
+  Future<void> removeMemberFromGroup(String groupId, String contactId) async {
+    await _groupsRef.child(groupId).child('members').child(contactId).remove();
+  }
+
+  Future<void> deleteGroupOnly(String groupId) async {
     await _groupsRef.child(groupId).remove();
   }
 
-  Future<void> addGroupTransaction(String groupId, String note, int amount) async {
-    final groupRef = _groupsRef.child(groupId);
-    final String txnId = groupRef.child('transactions').push().key!;
-
-    final txn = TransactionEntry(
-      id: txnId,
-      note: note,
-      amount: amount,
-      time: DateTime.now(),
-    );
-
-    await groupRef.child('transactions').child(txnId).set(txn.toMap());
-
-    final snapshot = await groupRef.child('totalBalance').get();
-    int currentBalance = int.tryParse(snapshot.value?.toString() ?? '0') ?? 0;
-    if (currentBalance == 0) {
-      final oldSnap = await groupRef.child('balance').get();
-      currentBalance = int.tryParse(oldSnap.value?.toString() ?? '0') ?? 0;
+  Future<void> deleteGroupAndMembers(String groupId, List<String> memberIds) async {
+    await _groupsRef.child(groupId).remove();
+    for (var contactId in memberIds) {
+      await _userRef.child(contactId).remove();
     }
-    final newBalance = currentBalance + amount;
-    await groupRef.child('totalBalance').set(newBalance);
-    await groupRef.child('balance').set(newBalance);
-  }
-
-  Future<void> deleteGroupTransaction(String groupId, String txnId, int txnAmount) async {
-    final groupRef = _groupsRef.child(groupId);
-    await groupRef.child('transactions').child(txnId).remove();
-
-    final snapshot = await groupRef.child('totalBalance').get();
-    int currentBalance = int.tryParse(snapshot.value?.toString() ?? '0') ?? 0;
-    if (currentBalance == 0) {
-      final oldSnap = await groupRef.child('balance').get();
-      currentBalance = int.tryParse(oldSnap.value?.toString() ?? '0') ?? 0;
-    }
-    final newBalance = currentBalance - txnAmount;
-    await groupRef.child('totalBalance').set(newBalance);
-    await groupRef.child('balance').set(newBalance);
   }
 
   Stream<GroupModel?> getGroupStream(String groupId) {

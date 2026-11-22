@@ -204,51 +204,60 @@ class HomeScreenState extends State<HomeScreen> {
       children: [
         _buildSearchField('Search groups...'),
         Expanded(
-          child: StreamBuilder<List<GroupModel>>(
-            stream: _dbService.groupsStream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Color(0xFF008080)));
-              }
+          child: StreamBuilder<List<Contact>>(
+            stream: _dbService.contactsStream,
+            builder: (context, contactsSnapshot) {
+              final allContacts = contactsSnapshot.data ?? [];
 
-              final groups = snapshot.data ?? [];
-              final filtered = groups
-                  .where((g) => g.name.toLowerCase().contains(_searchQuery))
-                  .toList();
+              return StreamBuilder<List<GroupModel>>(
+                stream: _dbService.groupsStream,
+                builder: (context, groupsSnapshot) {
+                  if (groupsSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Color(0xFF008080)));
+                  }
 
-              int totalGet = 0;
-              int totalGive = 0;
+                  final groups = groupsSnapshot.data ?? [];
+                  final filtered = groups
+                      .where((g) => g.name.toLowerCase().contains(_searchQuery))
+                      .toList();
 
-              for (var g in groups) {
-                if (g.balance > 0) {
-                  totalGet += g.balance;
-                } else if (g.balance < 0) {
-                  totalGive += g.balance.abs();
-                }
-              }
+                  int overallGet = 0;
+                  int overallGive = 0;
 
-              return Column(
-                children: [
-                  _buildCompactSummaryBar(
-                    getAmount: totalGet,
-                    giveAmount: totalGive,
-                  ),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? _buildEmptyState(
-                            icon: Icons.groups_outlined,
-                            message: _searchQuery.isEmpty ? 'No groups created yet' : 'No matching groups found',
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 100),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final group = filtered[index];
-                              return _buildGroupCard(group);
-                            },
-                          ),
-                  ),
-                ],
+                  for (var c in allContacts) {
+                    if (c.balance > 0) overallGet += c.balance;
+                    if (c.balance < 0) overallGive += c.balance.abs();
+                  }
+
+                  return Column(
+                    children: [
+                      _buildCompactSummaryBar(
+                        getAmount: overallGet,
+                        giveAmount: overallGive,
+                      ),
+                      Expanded(
+                        child: filtered.isEmpty
+                            ? _buildEmptyState(
+                                icon: Icons.groups_outlined,
+                                message: _searchQuery.isEmpty ? 'No groups created yet' : 'No matching groups found',
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 100),
+                                itemCount: filtered.length,
+                                itemBuilder: (context, index) {
+                                  final group = filtered[index];
+                                  final memberContacts = allContacts
+                                      .where((c) => group.memberIds.contains(c.id))
+                                      .toList();
+                                  final groupNet = memberContacts.fold<int>(0, (sum, c) => sum + c.balance);
+
+                                  return _buildGroupCard(group, memberContacts.length, groupNet);
+                                },
+                              ),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -323,7 +332,6 @@ class HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          // You'll Get
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -338,7 +346,6 @@ class HomeScreenState extends State<HomeScreen> {
             ],
           ),
           Container(height: 24, width: 1, color: const Color(0xFFE2E8F0)),
-          // You'll Give
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -353,7 +360,6 @@ class HomeScreenState extends State<HomeScreen> {
             ],
           ),
           Container(height: 24, width: 1, color: const Color(0xFFE2E8F0)),
-          // Net Balance
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -417,15 +423,8 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGroupCard(GroupModel group) {
-    final balanceColor = group.balance >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
-    final balanceText = group.balance >= 0
-        ? "Group Owes: ₹${group.balance.abs()}"
-        : "You Owe Group: ₹${group.balance.abs()}";
-
-    final memberCountStr = group.memberNames.isNotEmpty
-        ? '${group.memberNames.length} Members'
-        : (group.description.isNotEmpty ? group.description : balanceText);
+  Widget _buildGroupCard(GroupModel group, int memberCount, int groupNetBalance) {
+    final balanceColor = groupNetBalance >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
 
     return Card(
       shape: RoundedRectangleBorder(
@@ -451,13 +450,13 @@ class HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: Text(
-                memberCountStr,
+                '$memberCount Members${group.description.isNotEmpty ? " • ${group.description}" : ""}',
                 style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Text(
-              '₹${group.balance.abs()}',
+              '₹${groupNetBalance.abs()}',
               style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ],
@@ -536,86 +535,125 @@ class HomeScreenState extends State<HomeScreen> {
   void _showAddGroupDialog() {
     final nameController = TextEditingController();
     final descController = TextEditingController();
-    final membersController = TextEditingController();
+    final Set<String> selectedMemberIds = {};
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('New Group Khata', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Group Name (e.g. Roommates)',
-                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                ),
-                autofocus: true,
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: descController,
-                style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Description (optional)',
-                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: membersController,
-                style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Members (comma separated e.g. Alex, Sam)',
-                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
-                  filled: true,
-                  fillColor: const Color(0xFFF1F5F9),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.trim().isNotEmpty) {
-                final members = membersController.text
-                    .split(',')
-                    .map((m) => m.trim())
-                    .where((m) => m.isNotEmpty)
-                    .toList();
+      builder: (context) => StreamBuilder<List<Contact>>(
+        stream: _dbService.contactsStream,
+        builder: (context, snapshot) {
+          final allContacts = snapshot.data ?? [];
 
-                _dbService.addGroup(
-                  nameController.text.trim(),
-                  descController.text.trim(),
-                  members,
-                );
-                Navigator.pop(context);
-              }
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                title: Text('New Group Khata', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: nameController,
+                        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Group Name (e.g. Roommates)',
+                          hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                          filled: true,
+                          fillColor: const Color(0xFFF1F5F9),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                        autofocus: true,
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: descController,
+                        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Description (optional)',
+                          hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                          filled: true,
+                          fillColor: const Color(0xFFF1F5F9),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Select Members:',
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF334155)),
+                      ),
+                      const SizedBox(height: 6),
+                      allContacts.isEmpty
+                          ? Text(
+                              'No customers available yet. You can add members after creating the group.',
+                              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+                            )
+                          : Container(
+                              height: 180,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: ListView.builder(
+                                itemCount: allContacts.length,
+                                itemBuilder: (context, index) {
+                                  final contact = allContacts[index];
+                                  final isSelected = selectedMemberIds.contains(contact.id);
+
+                                  return CheckboxListTile(
+                                    dense: true,
+                                    activeColor: const Color(0xFF008080),
+                                    title: Text(
+                                      contact.name,
+                                      style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 13),
+                                    ),
+                                    value: isSelected,
+                                    onChanged: (val) {
+                                      setDialogState(() {
+                                        if (val == true) {
+                                          selectedMemberIds.add(contact.id);
+                                        } else {
+                                          selectedMemberIds.remove(contact.id);
+                                        }
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (nameController.text.trim().isNotEmpty) {
+                        _dbService.addGroup(
+                          nameController.text.trim(),
+                          descController.text.trim(),
+                          selectedMemberIds.toList(),
+                        );
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF008080),
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('Create Group', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF008080),
-              foregroundColor: Colors.white,
-            ),
-            child: Text('Create Group', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -653,23 +691,55 @@ class HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: Text('Delete Group ${group.name}?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
-        content: Text('All group transactions will be permanently removed.', style: GoogleFonts.poppins(color: const Color(0xFF334155))),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete ${group.name}?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+        content: Text(
+          'Choose how you want to delete this group:',
+          style: GoogleFonts.poppins(color: const Color(0xFF334155), fontSize: 13),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _dbService.deleteGroup(group.id);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
-            ),
-            child: Text('Delete', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              OutlinedButton(
+                onPressed: () {
+                  _dbService.deleteGroupOnly(group.id);
+                  Navigator.pop(context);
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF008080)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'Delete Group Only (Keep Customers)',
+                  style: GoogleFonts.poppins(color: const Color(0xFF008080), fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {
+                  _dbService.deleteGroupAndMembers(group.id, group.memberIds);
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFDC2626),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'Delete Group & All Member Customers',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+              ),
+            ],
           ),
         ],
       ),
