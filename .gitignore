@@ -1,0 +1,41 @@
+# Miscellaneous / Logs
+*.log
+*.sqlite
+/build.log
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+
+# Android
+/android/.gradle/
+/android/.kotlin/
+/android/local.properties
+/android/key.properties
+/android/app/khata-key.jks
+/android/app/*.jks
+/android/app/*.keystore
+/android/app/.cxx/
+
+# Firebase & Sensitive Configuration Files
+lib/firebase_options.dart
+firebase.json
+.firebaserc
+google-services.json
+GoogleService-Info.plist
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+scripts/
+
+# IDE & Editor files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.ds_store
+.DS_Store
