@@ -259,8 +259,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           OutlinedButton.icon(
                             onPressed: _isLoading ? null : _handleGoogleSignIn,
                             icon: Image.network(
-                              'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_G_logo.svg/1200px-Google_G_logo.svg.png',
+                              'https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png',
                               height: 18,
+                              width: 18,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.g_mobiledata, size: 22);
+                              },
                             ),
                             label: Text(
                               'Continue with Google',

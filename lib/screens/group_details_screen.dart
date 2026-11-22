@@ -106,7 +106,7 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
                       )
                     : ListView.builder(
                         reverse: true,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 24),
                         itemCount: txns.length,
                         itemBuilder: (context, index) {
                           final txn = txns[index];
@@ -128,26 +128,50 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Column(
         children: [
-          Text(
-            'Net Balance',
-            style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Group Net Balance: ',
+                style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
+              ),
+              Text(
+                '₹${group.balance.abs()}',
+                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: color),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                isPositive ? "(You Gave)" : "(You Got)",
+                style: GoogleFonts.poppins(fontSize: 12, color: color, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            '₹${group.balance.abs()}',
-            style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: color),
-          ),
-          Text(
-            isPositive ? "Group Owes You / You Gave" : "You Owe Group / You Got",
-            style: GoogleFonts.poppins(fontSize: 13, color: color, fontWeight: FontWeight.w600),
-          ),
+          if (group.memberNames.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              alignment: WrapAlignment.center,
+              children: group.memberNames.map((m) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F2FE),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  m,
+                  style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF0369A1)),
+                ),
+              )).toList(),
+            ),
+          ],
         ],
       ),
     );

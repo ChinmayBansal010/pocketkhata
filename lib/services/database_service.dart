@@ -86,11 +86,12 @@ class DatabaseService {
     });
   }
 
-  Future<void> addGroup(String name, String description) async {
+  Future<void> addGroup(String name, String description, [List<String> memberNames = const []]) async {
     final String groupId = _groupsRef.push().key!;
     await _groupsRef.child(groupId).set({
       'name': name,
       'description': description,
+      'memberNames': memberNames,
       'balance': 0,
       'transactions': {},
     });

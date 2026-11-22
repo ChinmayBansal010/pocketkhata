@@ -79,12 +79,14 @@ class HomeScreenState extends State<HomeScreen> {
         ),
       ),
       bottomNavigationBar: SafeArea(
+        bottom: true,
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,
+            border: Border(top: BorderSide(color: Colors.grey.shade200)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 10,
                 offset: const Offset(0, -2),
               ),
@@ -100,17 +102,18 @@ class HomeScreenState extends State<HomeScreen> {
               });
             },
             backgroundColor: Colors.white,
-            indicatorColor: const Color(0xFFE0F2F1),
+            indicatorColor: const Color(0xFFCCFBF1),
             elevation: 0,
-            destinations: [
+            height: 62,
+            destinations: const [
               NavigationDestination(
-                icon: const Icon(Icons.person_outline_rounded, color: Color(0xFF64748B)),
-                selectedIcon: const Icon(Icons.person_rounded, color: Color(0xFF008080)),
+                icon: Icon(Icons.person_outline_rounded, color: Color(0xFF64748B)),
+                selectedIcon: Icon(Icons.person_rounded, color: Color(0xFF0F766E)),
                 label: 'Customers',
               ),
               NavigationDestination(
-                icon: const Icon(Icons.groups_outlined, color: Color(0xFF64748B)),
-                selectedIcon: const Icon(Icons.groups_rounded, color: Color(0xFF008080)),
+                icon: Icon(Icons.groups_outlined, color: Color(0xFF64748B)),
+                selectedIcon: Icon(Icons.groups_rounded, color: Color(0xFF0F766E)),
                 label: 'Groups',
               ),
             ],
@@ -123,9 +126,9 @@ class HomeScreenState extends State<HomeScreen> {
     if (kIsWeb) {
       return Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Material(
-            elevation: 8,
+            elevation: 6,
             shadowColor: Colors.black26,
             child: content,
           ),
@@ -140,7 +143,7 @@ class HomeScreenState extends State<HomeScreen> {
   Widget _buildCustomersTab() {
     return Column(
       children: [
-        _buildSearchField('Search customers/contacts...'),
+        _buildSearchField('Search customers...'),
         Expanded(
           child: StreamBuilder<List<Contact>>(
             stream: _dbService.contactsStream,
@@ -167,10 +170,9 @@ class HomeScreenState extends State<HomeScreen> {
 
               return Column(
                 children: [
-                  _buildSummaryCard(
+                  _buildCompactSummaryBar(
                     getAmount: totalGet,
                     giveAmount: totalGive,
-                    title: 'Khata Overview',
                   ),
                   Expanded(
                     child: filtered.isEmpty
@@ -179,7 +181,7 @@ class HomeScreenState extends State<HomeScreen> {
                             message: _searchQuery.isEmpty ? 'No customers added yet' : 'No matching customers found',
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 100),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {
                               final contact = filtered[index];
@@ -227,10 +229,9 @@ class HomeScreenState extends State<HomeScreen> {
 
               return Column(
                 children: [
-                  _buildSummaryCard(
+                  _buildCompactSummaryBar(
                     getAmount: totalGet,
                     giveAmount: totalGive,
-                    title: 'Group Balance Overview',
                   ),
                   Expanded(
                     child: filtered.isEmpty
@@ -239,7 +240,7 @@ class HomeScreenState extends State<HomeScreen> {
                             message: _searchQuery.isEmpty ? 'No groups created yet' : 'No matching groups found',
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 100),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {
                               final group = filtered[index];
@@ -258,17 +259,17 @@ class HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSearchField(String hint) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
       child: TextField(
         controller: _searchController,
-        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w500),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
-          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF008080)),
+          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF008080), size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: Color(0xFF64748B)),
+                  icon: const Icon(Icons.clear_rounded, color: Color(0xFF64748B), size: 18),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _searchQuery = '');
@@ -277,17 +278,17 @@ class HomeScreenState extends State<HomeScreen> {
               : null,
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             borderSide: const BorderSide(color: Color(0xFF008080), width: 2),
           ),
         ),
@@ -296,81 +297,73 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSummaryCard({
+  // Compact Header Bar
+  Widget _buildCompactSummaryBar({
     required int getAmount,
     required int giveAmount,
-    required String title,
   }) {
+    final netBalance = getAmount - giveAmount;
+    final netColor = netBalance >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
-          ),
-          const SizedBox(height: 12),
-          Row(
+          // You'll Get
+          Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF2F2),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFFCA5A5)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "You'll Get",
-                        style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF991B1B)),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '₹$getAmount',
-                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626)),
-                      ),
-                    ],
-                  ),
-                ),
+              Text(
+                "You'll Get",
+                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF991B1B)),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0FDF4),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF86EFAC)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "You'll Give",
-                        style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF166534)),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '₹$giveAmount',
-                        style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF16A34A)),
-                      ),
-                    ],
-                  ),
-                ),
+              Text(
+                '₹$getAmount',
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626)),
+              ),
+            ],
+          ),
+          Container(height: 24, width: 1, color: const Color(0xFFE2E8F0)),
+          // You'll Give
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "You'll Give",
+                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF166534)),
+              ),
+              Text(
+                '₹$giveAmount',
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF16A34A)),
+              ),
+            ],
+          ),
+          Container(height: 24, width: 1, color: const Color(0xFFE2E8F0)),
+          // Net Balance
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Net Total',
+                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF475569)),
+              ),
+              Text(
+                '₹${netBalance.abs()}',
+                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: netColor),
               ),
             ],
           ),
@@ -387,31 +380,32 @@ class HomeScreenState extends State<HomeScreen> {
 
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         side: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       elevation: 0,
       color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
         leading: CircleAvatar(
           backgroundColor: const Color(0xFFCCFBF1),
           foregroundColor: const Color(0xFF0F766E),
+          radius: 20,
           child: Text(
             contact.name.isNotEmpty ? contact.name[0].toUpperCase() : 'C',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15),
           ),
         ),
         title: Text(
           contact.name,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: const Color(0xFF0F172A)),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF0F172A)),
         ),
         subtitle: Text(
           balanceText,
-          style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.w600, fontSize: 13),
+          style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.w600, fontSize: 12),
         ),
-        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -429,34 +423,46 @@ class HomeScreenState extends State<HomeScreen> {
         ? "Group Owes: ₹${group.balance.abs()}"
         : "You Owe Group: ₹${group.balance.abs()}";
 
+    final memberCountStr = group.memberNames.isNotEmpty
+        ? '${group.memberNames.length} Members'
+        : (group.description.isNotEmpty ? group.description : balanceText);
+
     return Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         side: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       elevation: 0,
       color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 5),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: CircleAvatar(
-          backgroundColor: const Color(0xFFE0F2FE),
-          foregroundColor: const Color(0xFF0369A1),
-          child: const Icon(Icons.groups_rounded, size: 20),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xFFE0F2FE),
+          foregroundColor: Color(0xFF0369A1),
+          radius: 20,
+          child: Icon(Icons.groups_rounded, size: 18),
         ),
         title: Text(
           group.name,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: const Color(0xFF0F172A)),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF0F172A)),
         ),
-        subtitle: Text(
-          group.description.isNotEmpty ? group.description : balanceText,
-          style: GoogleFonts.poppins(
-            color: group.description.isNotEmpty ? const Color(0xFF64748B) : balanceColor,
-            fontWeight: group.description.isNotEmpty ? FontWeight.normal : FontWeight.w600,
-            fontSize: 13,
-          ),
+        subtitle: Row(
+          children: [
+            Expanded(
+              child: Text(
+                memberCountStr,
+                style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '₹${group.balance.abs()}',
+              style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ],
         ),
-        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
@@ -473,11 +479,11 @@ class HomeScreenState extends State<HomeScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 64, color: const Color(0xFFCBD5E1)),
-          const SizedBox(height: 12),
+          Icon(icon, size: 56, color: const Color(0xFFCBD5E1)),
+          const SizedBox(height: 10),
           Text(
             message,
-            style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 14),
+            style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 13),
           ),
         ],
       ),
@@ -530,40 +536,56 @@ class HomeScreenState extends State<HomeScreen> {
   void _showAddGroupDialog() {
     final nameController = TextEditingController();
     final descController = TextEditingController();
+    final membersController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text('New Group Khata', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
-              decoration: InputDecoration(
-                hintText: 'Group Name (e.g. Roommates)',
-                hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
-                filled: true,
-                fillColor: const Color(0xFFF1F5F9),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Group Name (e.g. Roommates)',
+                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                  filled: true,
+                  fillColor: const Color(0xFFF1F5F9),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+                autofocus: true,
               ),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: descController,
-              style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
-              decoration: InputDecoration(
-                hintText: 'Description (optional)',
-                hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
-                filled: true,
-                fillColor: const Color(0xFFF1F5F9),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              const SizedBox(height: 10),
+              TextField(
+                controller: descController,
+                style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Description (optional)',
+                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                  filled: true,
+                  fillColor: const Color(0xFFF1F5F9),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 10),
+              TextField(
+                controller: membersController,
+                style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Members (comma separated e.g. Alex, Sam)',
+                  hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                  filled: true,
+                  fillColor: const Color(0xFFF1F5F9),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -573,7 +595,17 @@ class HomeScreenState extends State<HomeScreen> {
           ElevatedButton(
             onPressed: () {
               if (nameController.text.trim().isNotEmpty) {
-                _dbService.addGroup(nameController.text.trim(), descController.text.trim());
+                final members = membersController.text
+                    .split(',')
+                    .map((m) => m.trim())
+                    .where((m) => m.isNotEmpty)
+                    .toList();
+
+                _dbService.addGroup(
+                  nameController.text.trim(),
+                  descController.text.trim(),
+                  members,
+                );
                 Navigator.pop(context);
               }
             },

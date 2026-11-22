@@ -93,7 +93,7 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
                       )
                     : ListView.builder(
                         reverse: true,
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.only(left: 12, right: 12, top: 12, bottom: 24),
                         itemCount: txns.length,
                         itemBuilder: (context, index) {
                           final txn = txns[index];
@@ -115,25 +115,26 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Net Balance',
+            'Net Balance: ',
             style: GoogleFonts.poppins(fontSize: 13, color: const Color(0xFF64748B), fontWeight: FontWeight.w500),
           ),
-          const SizedBox(height: 2),
           Text(
             '₹${contact.balance.abs()}',
-            style: GoogleFonts.poppins(fontSize: 28, fontWeight: FontWeight.bold, color: color),
+            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: color),
           ),
+          const SizedBox(width: 6),
           Text(
-            isPositive ? "You Gave (To Get Back)" : "You Got (To Give Back)",
-            style: GoogleFonts.poppins(fontSize: 13, color: color, fontWeight: FontWeight.w600),
+            isPositive ? "(You Gave)" : "(You Got)",
+            style: GoogleFonts.poppins(fontSize: 12, color: color, fontWeight: FontWeight.w600),
           ),
         ],
       ),
