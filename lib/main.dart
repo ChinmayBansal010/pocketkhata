@@ -10,11 +10,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const KhataApp());
+  runApp(const MyApp());
 }
 
-class KhataApp extends StatelessWidget {
-  const KhataApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +97,9 @@ class KhataApp extends StatelessWidget {
     );
   }
 }
+
+// Compatibility alias
+typedef KhataApp = MyApp;
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
