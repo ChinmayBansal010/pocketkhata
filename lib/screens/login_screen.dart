@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -85,19 +84,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const Icon(Icons.account_balance_wallet_rounded, size: 72, color: Colors.white),
                     const SizedBox(height: 12),
-                    Text(
+                    const Text(
                       'Pocket Khata',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    Text(
+                    const Text(
                       'Manage your credits & debits effortlessly',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: const Color(0xFFB2DFDB),
+                        color: Color(0xFFB2DFDB),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -121,32 +120,32 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             _isLogin ? 'Welcome Back' : 'Create Account',
-                            style: GoogleFonts.poppins(
+                            style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0F172A),
+                              color: Color(0xFF0F172A),
                             ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 20),
 
                           // Email Field
-                          Text(
+                          const Text(
                             'Email Address',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF475569),
+                              color: Color(0xFF475569),
                             ),
                           ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                            style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14),
                             decoration: InputDecoration(
                               hintText: 'name@example.com',
-                              hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 14),
+                              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                               prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF008080)),
                               filled: true,
                               fillColor: const Color(0xFFF8FAFC),
@@ -168,22 +167,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 16),
 
                           // Password Field
-                          Text(
+                          const Text(
                             'Password',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF475569),
+                              color: Color(0xFF475569),
                             ),
                           ),
                           const SizedBox(height: 6),
                           TextField(
                             controller: _passwordController,
                             obscureText: true,
-                            style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                            style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14),
                             decoration: InputDecoration(
                               hintText: '••••••••',
-                              hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 14),
+                              hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                               prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF008080)),
                               filled: true,
                               fillColor: const Color(0xFFF8FAFC),
@@ -218,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                   child: Text(
                                     _isLogin ? 'LOG IN' : 'SIGN UP',
-                                    style: GoogleFonts.poppins(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 15,
                                       color: Colors.white,
@@ -233,8 +232,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () => setState(() => _isLogin = !_isLogin),
                             child: Text(
                               _isLogin ? "Don't have an account? Sign Up" : "Already have an account? Log In",
-                              style: GoogleFonts.poppins(
-                                color: const Color(0xFF008080),
+                              style: const TextStyle(
+                                color: Color(0xFF008080),
                                 fontWeight: FontWeight.w600,
                                 fontSize: 13,
                               ),
@@ -263,13 +262,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               height: 18,
                               width: 18,
                               errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.g_mobiledata, size: 22);
+                                return const Icon(Icons.g_mobiledata, size: 22, color: Color(0xFF008080));
                               },
                             ),
-                            label: Text(
+                            label: const Text(
                               'Continue with Google',
-                              style: GoogleFonts.poppins(
-                                color: const Color(0xFF0F172A),
+                              style: TextStyle(
+                                color: Color(0xFF0F172A),
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),

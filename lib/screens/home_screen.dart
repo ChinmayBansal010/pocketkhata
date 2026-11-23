@@ -1,5 +1,5 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/contact.dart';
 import '../models/group.dart';
 import '../services/auth_service.dart';
@@ -109,13 +109,13 @@ class HomeScreenState extends State<HomeScreen> {
             child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF008080), size: 24),
           ),
           const SizedBox(width: 12),
-          Expanded(
+          const Expanded(
             child: Text(
               'Pocket Khata',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
           ),
@@ -160,7 +160,7 @@ class HomeScreenState extends State<HomeScreen> {
                 child: Center(
                   child: Text(
                     'Customers',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                       color: _currentIndex == 0 ? const Color(0xFF008080) : const Color(0xFF64748B),
@@ -191,7 +191,7 @@ class HomeScreenState extends State<HomeScreen> {
                 child: Center(
                   child: Text(
                     'Groups',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
                       color: _currentIndex == 1 ? const Color(0xFF008080) : const Color(0xFF64748B),
@@ -255,19 +255,19 @@ class HomeScreenState extends State<HomeScreen> {
                     child: const Icon(Icons.account_balance_wallet_rounded, size: 64, color: Color(0xFF008080)),
                   ),
                   const SizedBox(height: 20),
-                  Text(
+                  const Text(
                     'Welcome to Pocket Khata',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
+                      color: Color(0xFF0F172A),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'Select a customer or group from the left menu to view and add transactions.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF64748B)),
+                    style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
                   ),
                   const SizedBox(height: 32),
 
@@ -288,14 +288,14 @@ class HomeScreenState extends State<HomeScreen> {
                     ),
                     child: Column(
                       children: [
-                        Text(
+                        const Text(
                           'Overall Net Financial Position',
-                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           '₹${netTotal.abs()}',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: netTotal >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
@@ -303,7 +303,7 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                         Text(
                           netTotal >= 0 ? "You Gave More (Net Receivable)" : "You Got More (Net Payable)",
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: netTotal >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
@@ -322,9 +322,9 @@ class HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: Column(
                                   children: [
-                                    Text("You'll Get", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF991B1B))),
+                                    const Text("You'll Get", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF991B1B))),
                                     const SizedBox(height: 4),
-                                    Text('₹$totalGet', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626))),
+                                    Text('₹$totalGet', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFFDC2626))),
                                   ],
                                 ),
                               ),
@@ -340,9 +340,9 @@ class HomeScreenState extends State<HomeScreen> {
                                 ),
                                 child: Column(
                                   children: [
-                                    Text("You'll Give", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF166534))),
+                                    const Text("You'll Give", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF166534))),
                                     const SizedBox(height: 4),
-                                    Text('₹$totalGive', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF16A34A))),
+                                    Text('₹$totalGive', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF16A34A))),
                                   ],
                                 ),
                               ),
@@ -400,11 +400,11 @@ class HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        title: Text(
+        title: const Text(
           'Pocket Khata',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF0F172A),
+            color: Color(0xFF0F172A),
             fontSize: 20,
           ),
         ),
@@ -431,7 +431,7 @@ class HomeScreenState extends State<HomeScreen> {
         icon: Icon(_currentIndex == 0 ? Icons.person_add_rounded : Icons.group_add_rounded),
         label: Text(
           _currentIndex == 0 ? 'Add Customer' : 'Add Group',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         ),
       ),
       bottomNavigationBar: SafeArea(
@@ -485,56 +485,74 @@ class HomeScreenState extends State<HomeScreen> {
       children: [
         _buildSearchField('Search customers...'),
         Expanded(
-          child: StreamBuilder<List<Contact>>(
-            stream: _dbService.contactsStream,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator(color: Color(0xFF008080)));
+          child: StreamBuilder<List<GroupModel>>(
+            stream: _dbService.groupsStream,
+            builder: (context, groupsSnapshot) {
+              final groups = groupsSnapshot.data ?? [];
+              final Set<String> groupedContactIds = {};
+              for (var g in groups) {
+                groupedContactIds.addAll(g.memberIds);
               }
 
-              final contacts = snapshot.data ?? [];
-              final filtered = contacts
-                  .where((c) => c.name.toLowerCase().contains(_searchQuery))
-                  .toList();
+              return StreamBuilder<List<Contact>>(
+                stream: _dbService.contactsStream,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Color(0xFF008080)));
+                  }
 
-              int totalGet = 0;
-              int totalGive = 0;
+                  final allContacts = snapshot.data ?? [];
 
-              for (var c in contacts) {
-                if (c.balance > 0) {
-                  totalGet += c.balance;
-                } else if (c.balance < 0) {
-                  totalGive += c.balance.abs();
-                }
-              }
+                  // Filter out contacts that are in any group!
+                  final standaloneContacts = allContacts
+                      .where((c) => !groupedContactIds.contains(c.id))
+                      .where((c) => c.name.toLowerCase().contains(_searchQuery))
+                      .toList();
 
-              return Column(
-                children: [
-                  _buildCompactSummaryBar(
-                    getAmount: totalGet,
-                    giveAmount: totalGive,
-                  ),
-                  Expanded(
-                    child: filtered.isEmpty
-                        ? _buildEmptyState(
-                            icon: Icons.people_outline_rounded,
-                            message: _searchQuery.isEmpty ? 'No customers added yet' : 'No matching customers found',
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.only(
-                              left: 12,
-                              right: 12,
-                              top: 4,
-                              bottom: isLargeScreen ? 30 : 100,
-                            ),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final contact = filtered[index];
-                              return _buildContactCard(contact, isLargeScreen: isLargeScreen);
-                            },
-                          ),
-                  ),
-                ],
+                  int totalGet = 0;
+                  int totalGive = 0;
+
+                  for (var c in standaloneContacts) {
+                    if (c.balance > 0) {
+                      totalGet += c.balance;
+                    } else if (c.balance < 0) {
+                      totalGive += c.balance.abs();
+                    }
+                  }
+
+                  return Column(
+                    children: [
+                      _buildCompactSummaryBar(
+                        getAmount: totalGet,
+                        giveAmount: totalGive,
+                      ),
+                      Expanded(
+                        child: standaloneContacts.isEmpty
+                            ? _buildEmptyState(
+                                icon: Icons.people_outline_rounded,
+                                message: _searchQuery.isEmpty
+                                    ? (allContacts.isNotEmpty && groupedContactIds.isNotEmpty
+                                        ? 'All customers are grouped in Groups'
+                                        : 'No customers added yet')
+                                    : 'No matching customers found',
+                              )
+                            : ListView.builder(
+                                padding: EdgeInsets.only(
+                                  left: 12,
+                                  right: 12,
+                                  top: 4,
+                                  bottom: isLargeScreen ? 30 : 100,
+                                ),
+                                itemCount: standaloneContacts.length,
+                                itemBuilder: (context, index) {
+                                  final contact = standaloneContacts[index];
+                                  return _buildContactCard(contact, isLargeScreen: isLargeScreen);
+                                },
+                              ),
+                      ),
+                    ],
+                  );
+                },
               );
             },
           ),
@@ -621,10 +639,10 @@ class HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
       child: TextField(
         controller: _searchController,
-        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w500),
+        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14, fontWeight: FontWeight.w500),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
           prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF008080), size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -684,13 +702,13 @@ class HomeScreenState extends State<HomeScreen> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 "You'll Get",
-                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF991B1B)),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF991B1B)),
               ),
               Text(
                 '₹$getAmount',
-                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626)),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
               ),
             ],
           ),
@@ -698,13 +716,13 @@ class HomeScreenState extends State<HomeScreen> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 "You'll Give",
-                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF166534)),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
               ),
               Text(
                 '₹$giveAmount',
-                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: const Color(0xFF16A34A)),
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF16A34A)),
               ),
             ],
           ),
@@ -712,13 +730,13 @@ class HomeScreenState extends State<HomeScreen> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              const Text(
                 'Net Total',
-                style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w600, color: const Color(0xFF475569)),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
               ),
               Text(
                 '₹${netBalance.abs()}',
-                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: netColor),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: netColor),
               ),
             ],
           ),
@@ -751,16 +769,16 @@ class HomeScreenState extends State<HomeScreen> {
           radius: 20,
           child: Text(
             contact.name.isNotEmpty ? contact.name[0].toUpperCase() : 'C',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
           ),
         ),
         title: Text(
           contact.name,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF0F172A)),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
         ),
         subtitle: Text(
           balanceText,
-          style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.w600, fontSize: 12),
+          style: TextStyle(color: balanceColor, fontWeight: FontWeight.w600, fontSize: 12),
         ),
         trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
         onTap: () {
@@ -803,20 +821,20 @@ class HomeScreenState extends State<HomeScreen> {
         ),
         title: Text(
           group.name,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14, color: const Color(0xFF0F172A)),
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
         ),
         subtitle: Row(
           children: [
             Expanded(
               child: Text(
                 '$memberCount Members${group.description.isNotEmpty ? " • ${group.description}" : ""}',
-                style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 12),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             Text(
               '₹${groupNetBalance.abs()}',
-              style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(color: balanceColor, fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ],
         ),
@@ -847,7 +865,8 @@ class HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 10),
           Text(
             message,
-            style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 13),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
           ),
         ],
       ),
@@ -861,13 +880,13 @@ class HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('New Customer', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+        title: const Text('New Customer', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
         content: TextField(
           controller: controller,
-          style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+          style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14),
           decoration: InputDecoration(
             hintText: 'Enter customer / contact name',
-            hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+            hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
             filled: true,
             fillColor: const Color(0xFFF1F5F9),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -877,7 +896,7 @@ class HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
           ),
           ElevatedButton(
             onPressed: () {
@@ -890,7 +909,7 @@ class HomeScreenState extends State<HomeScreen> {
               backgroundColor: const Color(0xFF008080),
               foregroundColor: Colors.white,
             ),
-            child: Text('Add', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            child: const Text('Add', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -914,7 +933,7 @@ class HomeScreenState extends State<HomeScreen> {
               return AlertDialog(
                 backgroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                title: Text('New Group Khata', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                title: const Text('New Group Khata', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                 content: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -922,10 +941,10 @@ class HomeScreenState extends State<HomeScreen> {
                     children: [
                       TextField(
                         controller: nameController,
-                        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Group Name (e.g. Roommates)',
-                          hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                           filled: true,
                           fillColor: const Color(0xFFF1F5F9),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -935,25 +954,25 @@ class HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 10),
                       TextField(
                         controller: descController,
-                        style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontSize: 14),
+                        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Description (optional)',
-                          hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+                          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
                           filled: true,
                           fillColor: const Color(0xFFF1F5F9),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                         ),
                       ),
                       const SizedBox(height: 14),
-                      Text(
+                      const Text(
                         'Select Members:',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13, color: const Color(0xFF334155)),
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF334155)),
                       ),
                       const SizedBox(height: 6),
                       allContacts.isEmpty
-                          ? Text(
+                          ? const Text(
                               'No customers available yet. You can add members after creating the group.',
-                              style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+                              style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                             )
                           : Container(
                               height: 180,
@@ -973,7 +992,7 @@ class HomeScreenState extends State<HomeScreen> {
                                     activeColor: const Color(0xFF008080),
                                     title: Text(
                                       contact.name,
-                                      style: GoogleFonts.poppins(color: const Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 13),
+                                      style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w600, fontSize: 13),
                                     ),
                                     value: isSelected,
                                     onChanged: (val) {
@@ -995,7 +1014,7 @@ class HomeScreenState extends State<HomeScreen> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+                    child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
                   ),
                   ElevatedButton(
                     onPressed: () {
@@ -1012,7 +1031,7 @@ class HomeScreenState extends State<HomeScreen> {
                       backgroundColor: const Color(0xFF008080),
                       foregroundColor: Colors.white,
                     ),
-                    child: Text('Create Group', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                    child: const Text('Create Group', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ],
               );
@@ -1028,12 +1047,12 @@ class HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        title: Text('Delete ${contact.name}?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
-        content: Text('All transactions for this customer will be permanently removed.', style: GoogleFonts.poppins(color: const Color(0xFF334155))),
+        title: Text('Delete ${contact.name}?', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        content: const Text('All transactions for this customer will be permanently removed.', style: TextStyle(color: Color(0xFF334155))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
           ),
           ElevatedButton(
             onPressed: () {
@@ -1047,7 +1066,7 @@ class HomeScreenState extends State<HomeScreen> {
               backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
             ),
-            child: Text('Delete', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+            child: const Text('Delete', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1060,10 +1079,10 @@ class HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete ${group.name}?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
-        content: Text(
+        title: Text('Delete ${group.name}?', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        content: const Text(
           'Choose how you want to delete this group:',
-          style: GoogleFonts.poppins(color: const Color(0xFF334155), fontSize: 13),
+          style: TextStyle(color: Color(0xFF334155), fontSize: 13),
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
@@ -1083,9 +1102,9 @@ class HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
+                child: const Text(
                   'Delete Group Only (Keep Customers)',
-                  style: GoogleFonts.poppins(color: const Color(0xFF008080), fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(color: Color(0xFF008080), fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
               const SizedBox(height: 8),
@@ -1103,15 +1122,15 @@ class HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: Text(
+                child: const Text(
                   'Delete Group & All Member Customers',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),
               const SizedBox(height: 4),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Cancel', style: GoogleFonts.poppins(color: const Color(0xFF64748B))),
+                child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
               ),
             ],
           ),

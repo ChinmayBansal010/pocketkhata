@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
@@ -33,21 +32,17 @@ class KhataApp extends StatelessWidget {
           onSurface: const Color(0xFF0F172A), // Deep dark text
           onPrimary: Colors.white,
         ),
-        textTheme: GoogleFonts.poppinsTextTheme().apply(
-          bodyColor: const Color(0xFF0F172A),
-          displayColor: const Color(0xFF0F172A),
-        ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.white,
-          titleTextStyle: GoogleFonts.poppins(
-            color: const Color(0xFF0F172A),
+          titleTextStyle: TextStyle(
+            color: Color(0xFF0F172A),
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
-          iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+          iconTheme: IconThemeData(color: Color(0xFF0F172A)),
         ),
         cardTheme: CardThemeData(
           elevation: 0,
@@ -61,13 +56,13 @@ class KhataApp extends StatelessWidget {
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          titleTextStyle: GoogleFonts.poppins(
-            color: const Color(0xFF0F172A),
+          titleTextStyle: const TextStyle(
+            color: Color(0xFF0F172A),
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
-          contentTextStyle: GoogleFonts.poppins(
-            color: const Color(0xFF334155),
+          contentTextStyle: const TextStyle(
+            color: Color(0xFF334155),
             fontSize: 14,
           ),
         ),
@@ -76,7 +71,7 @@ class KhataApp extends StatelessWidget {
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            textStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
+            textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -95,7 +90,7 @@ class KhataApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFF008080), width: 2),
           ),
-          hintStyle: GoogleFonts.poppins(color: const Color(0xFF94A3B8), fontSize: 13),
+          hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
         ),
       ),
       home: const AuthWrapper(),
