@@ -39,6 +39,63 @@ class HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _showPasswordResetDialog() {
+    final email = _authService.currentUser?.email ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Reset Password', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        content: Text(
+          email.isNotEmpty
+              ? 'Send a password reset email to $email?'
+              : 'Send a password reset link to your account email address?',
+          style: const TextStyle(color: Color(0xFF334155), fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              if (email.isNotEmpty) {
+                try {
+                  await _authService.sendPasswordResetEmail(email);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: const Color(0xFF16A34A),
+                        content: Text('Password reset link sent to $email. Please check your inbox.'),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: const Color(0xFFDC2626),
+                        content: Text('Error: ${e.toString().split(']').last.trim()}'),
+                      ),
+                    );
+                  }
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF008080),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Send Email', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -92,6 +149,8 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLargeScreenHeader() {
+    final userEmail = _authService.currentUser?.email ?? '';
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       decoration: const BoxDecoration(
@@ -109,20 +168,60 @@ class HomeScreenState extends State<HomeScreen> {
             child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF008080), size: 24),
           ),
           const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Pocket Khata',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: Color(0xFF0F172A),
-              ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Pocket Khata',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                if (userEmail.isNotEmpty)
+                  Text(
+                    userEmail,
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFF64748B), size: 20),
-            tooltip: 'Log out',
-            onPressed: () => _authService.signOut(),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF64748B), size: 20),
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onSelected: (value) {
+              if (value == 'reset') {
+                _showPasswordResetDialog();
+              } else if (value == 'logout') {
+                _authService.signOut();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'reset',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_reset_rounded, color: Color(0xFF008080), size: 18),
+                    SizedBox(width: 10),
+                    Text('Reset Password', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF0F172A))),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 18),
+                    SizedBox(width: 10),
+                    Text('Log Out', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFDC2626))),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -409,10 +508,39 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFF475569)),
-            tooltip: 'Log out',
-            onPressed: () => _authService.signOut(),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF475569)),
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onSelected: (value) {
+              if (value == 'reset') {
+                _showPasswordResetDialog();
+              } else if (value == 'logout') {
+                _authService.signOut();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'reset',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_reset_rounded, color: Color(0xFF008080), size: 18),
+                    SizedBox(width: 10),
+                    Text('Reset Password', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF0F172A))),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 18),
+                    SizedBox(width: 10),
+                    Text('Log Out', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFFDC2626))),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

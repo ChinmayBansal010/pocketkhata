@@ -30,7 +30,6 @@ class AuthService {
 
       final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
-        // Note: accessToken is not always required for Firebase on modern google_sign_in versions
       );
 
       return await _auth.signInWithCredential(credential);
@@ -62,6 +61,16 @@ class AuthService {
       );
     } catch (e) {
       print('Error during Email Sign-Up: $e');
+      rethrow;
+    }
+  }
+
+  // Send Password Reset Email
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } catch (e) {
+      print('Error sending password reset email: $e');
       rethrow;
     }
   }
