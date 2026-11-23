@@ -36,6 +36,10 @@ class DatabaseService {
     });
   }
 
+  Future<void> updateContactName(String contactId, String newName) async {
+    await _userRef.child(contactId).child('name').set(newName);
+  }
+
   Future<void> deleteContact(String contactId) async {
     await _userRef.child(contactId).remove();
   }
@@ -60,6 +64,33 @@ class DatabaseService {
       currentBalance = int.tryParse(totalSnap.value?.toString() ?? '0') ?? 0;
     }
     final newBalance = currentBalance + amount;
+    await contactRef.child('balance').set(newBalance);
+    await contactRef.child('totalBalance').set(newBalance);
+  }
+
+  Future<void> updateTransaction(
+    String contactId,
+    TransactionEntry oldTxn,
+    String newNote,
+    int newAmount,
+  ) async {
+    final contactRef = _userRef.child(contactId);
+    final updatedTxn = TransactionEntry(
+      id: oldTxn.id,
+      note: newNote,
+      amount: newAmount,
+      time: oldTxn.time,
+    );
+
+    await contactRef.child('transactions').child(oldTxn.id).set(updatedTxn.toMap());
+
+    final snapshot = await contactRef.child('balance').get();
+    int currentBalance = int.tryParse(snapshot.value?.toString() ?? '0') ?? 0;
+    if (currentBalance == 0) {
+      final totalSnap = await contactRef.child('totalBalance').get();
+      currentBalance = int.tryParse(totalSnap.value?.toString() ?? '0') ?? 0;
+    }
+    final newBalance = currentBalance - oldTxn.amount + newAmount;
     await contactRef.child('balance').set(newBalance);
     await contactRef.child('totalBalance').set(newBalance);
   }
@@ -111,6 +142,11 @@ class DatabaseService {
       'description': description,
       'members': membersMap,
     });
+  }
+
+  Future<void> updateGroupDetails(String groupId, String newName, String newDescription) async {
+    await _groupsRef.child(groupId).child('name').set(newName);
+    await _groupsRef.child(groupId).child('description').set(newDescription);
   }
 
   Future<void> addMemberToGroup(String groupId, String contactId) async {

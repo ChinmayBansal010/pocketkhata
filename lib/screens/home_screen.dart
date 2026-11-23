@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/contact.dart';
@@ -24,6 +23,10 @@ class HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
+  // For Desktop/Large screen split view
+  String? _selectedContactId;
+  String? _selectedGroupId;
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +41,360 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = Scaffold(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isLargeScreen = constraints.maxWidth >= 800;
+
+        if (isLargeScreen) {
+          return _buildLargeScreenLayout();
+        } else {
+          return _buildMobileScreenLayout();
+        }
+      },
+    );
+  }
+
+  // ==========================================
+  // LARGE SCREEN / DESKTOP RESPONSIVE LAYOUT
+  // ==========================================
+  Widget _buildLargeScreenLayout() {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF1F5F9),
+      body: Row(
+        children: [
+          // Left Sidebar (Navigation & Master List)
+          SizedBox(
+            width: 380,
+            child: Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  _buildLargeScreenHeader(),
+                  _buildLargeScreenTabToggle(),
+                  Expanded(
+                    child: _currentIndex == 0
+                        ? _buildCustomersTabContent(isLargeScreen: true)
+                        : _buildGroupsTabContent(isLargeScreen: true),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const VerticalDivider(width: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+
+          // Right Workspace Pane (Detail View / Dashboard)
+          Expanded(
+            child: _buildRightWorkspacePane(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLargeScreenHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE0F2F1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF008080), size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Pocket Khata',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFF64748B), size: 20),
+            tooltip: 'Log out',
+            onPressed: () => _authService.signOut(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLargeScreenTabToggle() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 12, 14, 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() {
+                _currentIndex = 0;
+                _selectedGroupId = null;
+                _searchController.clear();
+                _searchQuery = '';
+              }),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: _currentIndex == 0 ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: _currentIndex == 0
+                      ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Customers',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: _currentIndex == 0 ? const Color(0xFF008080) : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() {
+                _currentIndex = 1;
+                _selectedContactId = null;
+                _searchController.clear();
+                _searchQuery = '';
+              }),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: _currentIndex == 1 ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: _currentIndex == 1
+                      ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    'Groups',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: _currentIndex == 1 ? const Color(0xFF008080) : const Color(0xFF64748B),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRightWorkspacePane() {
+    if (_currentIndex == 0 && _selectedContactId != null) {
+      return ContactDetailsScreen(
+        key: ValueKey(_selectedContactId),
+        uid: widget.uid,
+        contactId: _selectedContactId!,
+        isEmbedded: true,
+      );
+    }
+
+    if (_currentIndex == 1 && _selectedGroupId != null) {
+      return GroupDetailsScreen(
+        key: ValueKey(_selectedGroupId),
+        uid: widget.uid,
+        groupId: _selectedGroupId!,
+        isEmbedded: true,
+      );
+    }
+
+    // Default Welcome & Dashboard Workspace View
+    return StreamBuilder<List<Contact>>(
+      stream: _dbService.contactsStream,
+      builder: (context, snapshot) {
+        final contacts = snapshot.data ?? [];
+        int totalGet = 0;
+        int totalGive = 0;
+        for (var c in contacts) {
+          if (c.balance > 0) totalGet += c.balance;
+          if (c.balance < 0) totalGive += c.balance.abs();
+        }
+        final netTotal = totalGet - totalGive;
+
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE0F2F1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.account_balance_wallet_rounded, size: 64, color: Color(0xFF008080)),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Welcome to Pocket Khata',
+                    style: GoogleFonts.poppins(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Select a customer or group from the left menu to view and add transactions.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF64748B)),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Overall Dashboard Cards
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Overall Net Financial Position',
+                          style: GoogleFonts.poppins(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF64748B)),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '₹${netTotal.abs()}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: netTotal >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+                          ),
+                        ),
+                        Text(
+                          netTotal >= 0 ? "You Gave More (Net Receivable)" : "You Got More (Net Payable)",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: netTotal >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF2F2),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: const Color(0xFFFCA5A5)),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text("You'll Get", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF991B1B))),
+                                    const SizedBox(height: 4),
+                                    Text('₹$totalGet', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFFDC2626))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF0FDF4),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: const Color(0xFF86EFAC)),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text("You'll Give", style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF166534))),
+                                    const SizedBox(height: 4),
+                                    Text('₹$totalGive', style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF16A34A))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _showAddContactDialog,
+                        icon: const Icon(Icons.person_add_rounded, size: 18),
+                        label: const Text('Add Customer'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF008080),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      OutlinedButton.icon(
+                        onPressed: _showAddGroupDialog,
+                        icon: const Icon(Icons.group_add_rounded, size: 18),
+                        label: const Text('Create Group'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF008080),
+                          side: const BorderSide(color: Color(0xFF008080)),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ==========================================
+  // MOBILE SCREEN LAYOUT (< 800px)
+  // ==========================================
+  Widget _buildMobileScreenLayout() {
+    return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         elevation: 0,
@@ -63,8 +419,8 @@ class HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          _buildCustomersTab(),
-          _buildGroupsTab(),
+          _buildCustomersTabContent(isLargeScreen: false),
+          _buildGroupsTabContent(isLargeScreen: false),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -121,26 +477,10 @@ class HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-
-    // Responsive container for web desktop/tablet
-    if (kIsWeb) {
-      return Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: Material(
-            elevation: 6,
-            shadowColor: Colors.black26,
-            child: content,
-          ),
-        ),
-      );
-    }
-
-    return content;
   }
 
-  // --- Customers Tab ---
-  Widget _buildCustomersTab() {
+  // --- Customers Tab Content ---
+  Widget _buildCustomersTabContent({required bool isLargeScreen}) {
     return Column(
       children: [
         _buildSearchField('Search customers...'),
@@ -181,11 +521,16 @@ class HomeScreenState extends State<HomeScreen> {
                             message: _searchQuery.isEmpty ? 'No customers added yet' : 'No matching customers found',
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 100),
+                            padding: EdgeInsets.only(
+                              left: 12,
+                              right: 12,
+                              top: 4,
+                              bottom: isLargeScreen ? 30 : 100,
+                            ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {
                               final contact = filtered[index];
-                              return _buildContactCard(contact);
+                              return _buildContactCard(contact, isLargeScreen: isLargeScreen);
                             },
                           ),
                   ),
@@ -198,8 +543,8 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Groups Tab ---
-  Widget _buildGroupsTab() {
+  // --- Groups Tab Content ---
+  Widget _buildGroupsTabContent({required bool isLargeScreen}) {
     return Column(
       children: [
         _buildSearchField('Search groups...'),
@@ -242,7 +587,12 @@ class HomeScreenState extends State<HomeScreen> {
                                 message: _searchQuery.isEmpty ? 'No groups created yet' : 'No matching groups found',
                               )
                             : ListView.builder(
-                                padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 100),
+                                padding: EdgeInsets.only(
+                                  left: 12,
+                                  right: 12,
+                                  top: 4,
+                                  bottom: isLargeScreen ? 30 : 100,
+                                ),
                                 itemCount: filtered.length,
                                 itemBuilder: (context, index) {
                                   final group = filtered[index];
@@ -251,7 +601,7 @@ class HomeScreenState extends State<HomeScreen> {
                                       .toList();
                                   final groupNet = memberContacts.fold<int>(0, (sum, c) => sum + c.balance);
 
-                                  return _buildGroupCard(group, memberContacts.length, groupNet);
+                                  return _buildGroupCard(group, memberContacts.length, groupNet, isLargeScreen: isLargeScreen);
                                 },
                               ),
                       ),
@@ -306,7 +656,6 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Compact Header Bar
   Widget _buildCompactSummaryBar({
     required int getAmount,
     required int giveAmount,
@@ -378,19 +727,21 @@ class HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildContactCard(Contact contact) {
+  Widget _buildContactCard(Contact contact, {required bool isLargeScreen}) {
     final balanceColor = contact.balance >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
     final balanceText = contact.balance >= 0
         ? "You'll Get: ₹${contact.balance.abs()}"
         : "You'll Give: ₹${contact.balance.abs()}";
 
+    final isSelected = isLargeScreen && _selectedContactId == contact.id;
+
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: BorderSide(color: isSelected ? const Color(0xFF008080) : const Color(0xFFE2E8F0), width: isSelected ? 2 : 1),
       ),
       elevation: 0,
-      color: Colors.white,
+      color: isSelected ? const Color(0xFFF0FDF4) : Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
@@ -412,27 +763,35 @@ class HomeScreenState extends State<HomeScreen> {
           style: GoogleFonts.poppins(color: balanceColor, fontWeight: FontWeight.w600, fontSize: 12),
         ),
         trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ContactDetailsScreen(uid: widget.uid, contactId: contact.id),
-          ),
-        ),
+        onTap: () {
+          if (isLargeScreen) {
+            setState(() => _selectedContactId = contact.id);
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ContactDetailsScreen(uid: widget.uid, contactId: contact.id),
+              ),
+            );
+          }
+        },
         onLongPress: () => _showDeleteContactDialog(contact),
       ),
     );
   }
 
-  Widget _buildGroupCard(GroupModel group, int memberCount, int groupNetBalance) {
+  Widget _buildGroupCard(GroupModel group, int memberCount, int groupNetBalance, {required bool isLargeScreen}) {
     final balanceColor = groupNetBalance >= 0 ? const Color(0xFFDC2626) : const Color(0xFF16A34A);
+
+    final isSelected = isLargeScreen && _selectedGroupId == group.id;
 
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: Color(0xFFE2E8F0)),
+        side: BorderSide(color: isSelected ? const Color(0xFF008080) : const Color(0xFFE2E8F0), width: isSelected ? 2 : 1),
       ),
       elevation: 0,
-      color: Colors.white,
+      color: isSelected ? const Color(0xFFF0FDF4) : Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
@@ -462,12 +821,18 @@ class HomeScreenState extends State<HomeScreen> {
           ],
         ),
         trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => GroupDetailsScreen(uid: widget.uid, groupId: group.id),
-          ),
-        ),
+        onTap: () {
+          if (isLargeScreen) {
+            setState(() => _selectedGroupId = group.id);
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GroupDetailsScreen(uid: widget.uid, groupId: group.id),
+              ),
+            );
+          }
+        },
         onLongPress: () => _showDeleteGroupDialog(group),
       ),
     );
@@ -673,6 +1038,9 @@ class HomeScreenState extends State<HomeScreen> {
           ElevatedButton(
             onPressed: () {
               _dbService.deleteContact(contact.id);
+              if (_selectedContactId == contact.id) {
+                setState(() => _selectedContactId = null);
+              }
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -705,6 +1073,9 @@ class HomeScreenState extends State<HomeScreen> {
               OutlinedButton(
                 onPressed: () {
                   _dbService.deleteGroupOnly(group.id);
+                  if (_selectedGroupId == group.id) {
+                    setState(() => _selectedGroupId = null);
+                  }
                   Navigator.pop(context);
                 },
                 style: OutlinedButton.styleFrom(
@@ -721,6 +1092,9 @@ class HomeScreenState extends State<HomeScreen> {
               ElevatedButton(
                 onPressed: () {
                   _dbService.deleteGroupAndMembers(group.id, group.memberIds);
+                  if (_selectedGroupId == group.id) {
+                    setState(() => _selectedGroupId = null);
+                  }
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(

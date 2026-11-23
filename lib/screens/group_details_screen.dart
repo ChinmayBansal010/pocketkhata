@@ -8,8 +8,14 @@ import 'contact_details_screen.dart';
 class GroupDetailsScreen extends StatefulWidget {
   final String uid;
   final String groupId;
+  final bool isEmbedded;
 
-  const GroupDetailsScreen({super.key, required this.uid, required this.groupId});
+  const GroupDetailsScreen({
+    super.key,
+    required this.uid,
+    required this.groupId,
+    this.isEmbedded = false,
+  });
 
   @override
   GroupDetailsScreenState createState() => GroupDetailsScreenState();
@@ -39,6 +45,7 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
       builder: (context, groupSnapshot) {
         if (!groupSnapshot.hasData || groupSnapshot.data == null) {
           return const Scaffold(
+            backgroundColor: Color(0xFFF8FAFC),
             body: Center(child: CircularProgressIndicator(color: Color(0xFF008080))),
           );
         }
@@ -66,6 +73,71 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
               } else if (c.balance < 0) {
                 totalGive += c.balance.abs();
               }
+            }
+
+            Widget screenBody = Column(
+              children: [
+                _buildCompactSummaryBar(
+                  getAmount: totalGet,
+                  giveAmount: totalGive,
+                  memberCount: memberContacts.length,
+                ),
+                _buildSearchField(),
+                Expanded(
+                  child: filteredMembers.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.group_outlined, size: 56, color: Color(0xFFCBD5E1)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  memberContacts.isEmpty
+                                      ? 'No members in this group yet.\nTap + to add members from your customers.'
+                                      : 'No matching members found',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 13),
+                                ),
+                                if (memberContacts.isEmpty) ...[
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () => _showAddMemberDialog(group, allContacts),
+                                    icon: const Icon(Icons.person_add_rounded, size: 18),
+                                    label: const Text('Add Members'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF008080),
+                                      foregroundColor: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 40),
+                          itemCount: filteredMembers.length,
+                          itemBuilder: (context, index) {
+                            final contact = filteredMembers[index];
+                            return _buildMemberCard(group, contact);
+                          },
+                        ),
+                ),
+              ],
+            );
+
+            if (widget.isEmbedded) {
+              return Container(
+                color: const Color(0xFFF8FAFC),
+                child: Column(
+                  children: [
+                    _buildEmbeddedHeader(group, allContacts),
+                    Expanded(child: screenBody),
+                  ],
+                ),
+              );
             }
 
             return Scaffold(
@@ -107,62 +179,61 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
                   ),
                 ],
               ),
-              body: Column(
-                children: [
-                  _buildCompactSummaryBar(
-                    getAmount: totalGet,
-                    giveAmount: totalGive,
-                    memberCount: memberContacts.length,
-                  ),
-                  _buildSearchField(),
-                  Expanded(
-                    child: filteredMembers.isEmpty
-                        ? Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.group_outlined, size: 56, color: Color(0xFFCBD5E1)),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    memberContacts.isEmpty
-                                        ? 'No members in this group yet.\nTap + to add members from your customers.'
-                                        : 'No matching members found',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.poppins(color: const Color(0xFF64748B), fontSize: 13),
-                                  ),
-                                  if (memberContacts.isEmpty) ...[
-                                    const SizedBox(height: 16),
-                                    ElevatedButton.icon(
-                                      onPressed: () => _showAddMemberDialog(group, allContacts),
-                                      icon: const Icon(Icons.person_add_rounded, size: 18),
-                                      label: const Text('Add Members'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF008080),
-                                        foregroundColor: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(left: 14, right: 14, top: 4, bottom: 40),
-                            itemCount: filteredMembers.length,
-                            itemBuilder: (context, index) {
-                              final contact = filteredMembers[index];
-                              return _buildMemberCard(group, contact);
-                            },
-                          ),
-                  ),
-                ],
-              ),
+              body: screenBody,
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildEmbeddedHeader(GroupModel group, List<Contact> allContacts) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            backgroundColor: Color(0xFFE0F2FE),
+            foregroundColor: Color(0xFF0369A1),
+            radius: 20,
+            child: Icon(Icons.groups_rounded, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  group.name,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+                Text(
+                  group.description.isNotEmpty ? group.description : 'Group Ledger',
+                  style: GoogleFonts.poppins(fontSize: 12, color: const Color(0xFF64748B)),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_add_rounded, color: Color(0xFF008080), size: 20),
+            tooltip: 'Add Member',
+            onPressed: () => _showAddMemberDialog(group, allContacts),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFDC2626), size: 20),
+            tooltip: 'Delete Group',
+            onPressed: () => _showDeleteGroupDialog(group),
+          ),
+        ],
+      ),
     );
   }
 
@@ -440,7 +511,7 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 onPressed: () {
                   _dbService.deleteGroupOnly(group.id);
                   Navigator.pop(context); // Pop dialog
-                  Navigator.pop(context); // Pop details screen
+                  if (!widget.isEmbedded) Navigator.pop(context); // Pop details screen
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFF008080)),
@@ -457,7 +528,7 @@ class GroupDetailsScreenState extends State<GroupDetailsScreen> {
                 onPressed: () {
                   _dbService.deleteGroupAndMembers(group.id, group.memberIds);
                   Navigator.pop(context); // Pop dialog
-                  Navigator.pop(context); // Pop details screen
+                  if (!widget.isEmbedded) Navigator.pop(context); // Pop details screen
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFDC2626),
