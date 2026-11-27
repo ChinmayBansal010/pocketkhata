@@ -44,6 +44,23 @@ class DatabaseService {
     await _userRef.child(contactId).remove();
   }
 
+  Future<void> _recalculateAndSetContactBalance(DatabaseReference contactRef) async {
+    final txnsSnap = await contactRef.child('transactions').get();
+    int calculatedBalance = 0;
+
+    if (txnsSnap.exists && txnsSnap.value is Map) {
+      (txnsSnap.value as Map).forEach((key, val) {
+        if (val is Map) {
+          final entry = TransactionEntry.fromMap(key.toString(), val);
+          calculatedBalance += entry.amount;
+        }
+      });
+    }
+
+    await contactRef.child('balance').set(calculatedBalance);
+    await contactRef.child('totalBalance').set(calculatedBalance);
+  }
+
   Future<void> addTransaction(String contactId, String note, int amount) async {
     final contactRef = _userRef.child(contactId);
     final String txnId = contactRef.child('transactions').push().key!;
@@ -56,16 +73,7 @@ class DatabaseService {
     );
 
     await contactRef.child('transactions').child(txnId).set(txn.toMap());
-
-    final snapshot = await contactRef.child('balance').get();
-    int currentBalance = int.tryParse(snapshot.value?.toString() ?? '0') ?? 0;
-    if (currentBalance == 0) {
-      final totalSnap = await contactRef.child('totalBalance').get();
-      currentBalance = int.tryParse(totalSnap.value?.toString() ?? '0') ?? 0;
-    }
-    final newBalance = currentBalance + amount;
-    await contactRef.child('balance').set(newBalance);
-    await contactRef.child('totalBalance').set(newBalance);
+    await _recalculateAndSetContactBalance(contactRef);
   }
 
   Future<void> updateTransaction(
@@ -83,31 +91,13 @@ class DatabaseService {
     );
 
     await contactRef.child('transactions').child(oldTxn.id).set(updatedTxn.toMap());
-
-    final snapshot = await contactRef.child('balance').get();
-    int currentBalance = int.tryParse(snapshot.value?.toString() ?? '0') ?? 0;
-    if (currentBalance == 0) {
-      final totalSnap = await contactRef.child('totalBalance').get();
-      currentBalance = int.tryParse(totalSnap.value?.toString() ?? '0') ?? 0;
-    }
-    final newBalance = currentBalance - oldTxn.amount + newAmount;
-    await contactRef.child('balance').set(newBalance);
-    await contactRef.child('totalBalance').set(newBalance);
+    await _recalculateAndSetContactBalance(contactRef);
   }
 
-  Future<void> deleteTransaction(String contactId, String txnId, int txnAmount) async {
+  Future<void> deleteTransaction(String contactId, String txnId, [int? txnAmount]) async {
     final contactRef = _userRef.child(contactId);
     await contactRef.child('transactions').child(txnId).remove();
-
-    final snapshot = await contactRef.child('balance').get();
-    int currentBalance = int.tryParse(snapshot.value?.toString() ?? '0') ?? 0;
-    if (currentBalance == 0) {
-      final totalSnap = await contactRef.child('totalBalance').get();
-      currentBalance = int.tryParse(totalSnap.value?.toString() ?? '0') ?? 0;
-    }
-    final newBalance = currentBalance - txnAmount;
-    await contactRef.child('balance').set(newBalance);
-    await contactRef.child('totalBalance').set(newBalance);
+    await _recalculateAndSetContactBalance(contactRef);
   }
 
   Stream<Contact?> getContactStream(String contactId) {

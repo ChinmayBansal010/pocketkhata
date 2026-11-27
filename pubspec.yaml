@@ -21,9 +21,10 @@ dependencies:
   # Google Sign-In
   google_sign_in: ^7.1.1
 
-  # UI
+  # UI & Export
   google_fonts: ^6.2.1
   intl: ^0.20.2
+  excel: ^4.0.6
 
 dev_dependencies:
   flutter_test:

@@ -4,6 +4,7 @@ import '../models/contact.dart';
 import '../models/group.dart';
 import '../services/auth_service.dart';
 import '../services/database_service.dart';
+import '../services/excel_export_service.dart';
 import 'contact_details_screen.dart';
 import 'group_details_screen.dart';
 
@@ -37,6 +38,27 @@ class HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _exportMasterExcel() async {
+    final contacts = await _dbService.contactsStream.first;
+    if (contacts.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No customer records available to export')),
+        );
+      }
+      return;
+    }
+    await ExcelExportService.exportAllCustomers(contacts);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Color(0xFF16A34A),
+          content: Text('Master Excel report exported successfully!'),
+        ),
+      );
+    }
   }
 
   void _showPasswordResetDialog() {
@@ -194,13 +216,25 @@ class HomeScreenState extends State<HomeScreen> {
             color: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onSelected: (value) {
-              if (value == 'reset') {
+              if (value == 'export') {
+                _exportMasterExcel();
+              } else if (value == 'reset') {
                 _showPasswordResetDialog();
               } else if (value == 'logout') {
                 _authService.signOut();
               }
             },
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'export',
+                child: Row(
+                  children: [
+                    Icon(Icons.description_outlined, color: Color(0xFF008080), size: 18),
+                    SizedBox(width: 10),
+                    Text('Export Master Excel', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF0F172A))),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'reset',
                 child: Row(
@@ -463,18 +497,18 @@ class HomeScreenState extends State<HomeScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF008080),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       OutlinedButton.icon(
-                        onPressed: _showAddGroupDialog,
-                        icon: const Icon(Icons.group_add_rounded, size: 18),
-                        label: const Text('Create Group'),
+                        onPressed: _exportMasterExcel,
+                        icon: const Icon(Icons.description_outlined, size: 18),
+                        label: const Text('Export Excel'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF008080),
                           side: const BorderSide(color: Color(0xFF008080)),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
@@ -508,18 +542,35 @@ class HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.description_outlined, color: Color(0xFF008080)),
+            tooltip: 'Export Master Excel Report',
+            onPressed: _exportMasterExcel,
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF475569)),
             color: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onSelected: (value) {
-              if (value == 'reset') {
+              if (value == 'export') {
+                _exportMasterExcel();
+              } else if (value == 'reset') {
                 _showPasswordResetDialog();
               } else if (value == 'logout') {
                 _authService.signOut();
               }
             },
             itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'export',
+                child: Row(
+                  children: [
+                    Icon(Icons.description_outlined, color: Color(0xFF008080), size: 18),
+                    SizedBox(width: 10),
+                    Text('Export Master Excel', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF0F172A))),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'reset',
                 child: Row(
@@ -908,7 +959,17 @@ class HomeScreenState extends State<HomeScreen> {
           balanceText,
           style: TextStyle(color: balanceColor, fontWeight: FontWeight.w600, fontSize: 12),
         ),
-        trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.description_outlined, color: Color(0xFF008080), size: 18),
+              tooltip: 'Export Customer Excel Statement',
+              onPressed: () => ExcelExportService.exportSingleCustomer(contact),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 20),
+          ],
+        ),
         onTap: () {
           if (isLargeScreen) {
             setState(() => _selectedContactId = contact.id);

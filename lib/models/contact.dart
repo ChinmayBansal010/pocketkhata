@@ -34,7 +34,7 @@ class Contact {
     int parsedBalance = (num.tryParse(rawBalance.toString()) ?? 0).toInt();
 
     int calculatedBalance = txns.values.fold(0, (sum, t) => sum + t.amount);
-    int finalBalance = (parsedBalance != 0 || txns.isEmpty) ? parsedBalance : calculatedBalance;
+    int finalBalance = txns.isNotEmpty ? calculatedBalance : parsedBalance;
 
     return Contact(
       id: id,

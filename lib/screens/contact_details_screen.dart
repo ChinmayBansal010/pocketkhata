@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/contact.dart';
 import '../models/transaction_entry.dart';
 import '../services/database_service.dart';
+import '../services/excel_export_service.dart';
 
 class ContactDetailsScreen extends StatefulWidget {
   final String uid;
@@ -163,6 +164,11 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.description_outlined, color: Color(0xFF008080)),
+                tooltip: 'Export Excel Statement',
+                onPressed: () => ExcelExportService.exportSingleCustomer(contact),
+              ),
+              IconButton(
                 icon: const Icon(Icons.edit_outlined, color: Color(0xFF008080)),
                 tooltip: 'Edit Customer Name',
                 onPressed: () => _showEditContactDialog(contact),
@@ -212,6 +218,11 @@ class ContactDetailsScreenState extends State<ContactDetailsScreen> {
                 ),
               ],
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.description_outlined, color: Color(0xFF008080), size: 20),
+            tooltip: 'Export Excel Statement',
+            onPressed: () => ExcelExportService.exportSingleCustomer(contact),
           ),
           IconButton(
             icon: const Icon(Icons.edit_outlined, color: Color(0xFF008080), size: 20),
